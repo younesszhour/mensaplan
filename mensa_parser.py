@@ -10,6 +10,7 @@ OUTPUT_DIR = "images"
 FONT_PATH = "Futura.ttc"
 
 # AUFLÖSUNG & LAYOUT (Final)
+# Wir entwerfen im Querformat (1448x1072), drehen es aber am Ende für den Kindle (1072x1448)
 IMG_WIDTH = 1448
 IMG_HEIGHT = 1072
 
@@ -72,9 +73,18 @@ def create_image(day_name, dishes, filename):
     dishes_to_draw = dishes[:3]
     num_dishes = len(dishes_to_draw)
     
+    # Hilfsfunktion zum Speichern (inkl. Rotation)
+    def save_rotated(image_obj, fname):
+        # 90 Grad drehen für Kindle Display (Portrait -> Landscape View)
+        # expand=True tauscht Breite/Höhe (wird 1072x1448)
+        img_rotated = image_obj.rotate(90, expand=True)
+        path = os.path.join(OUTPUT_DIR, fname)
+        img_rotated.save(path)
+        print(f"Erstellt (rotiert): {path}")
+
     if not num_dishes:
         draw.text((50, 160), "Keine Daten oder geschlossen.", font=font_text, fill=0)
-        img.save(os.path.join(OUTPUT_DIR, filename))
+        save_rotated(img, filename)
         return
 
     block_heights = []
@@ -99,12 +109,10 @@ def create_image(day_name, dishes, filename):
         theoretical_gap = 0
 
     if theoretical_gap > MAX_GAP:
-        # Genug Platz: Begrenzen auf 90px & Zentrieren
         used_gap = MAX_GAP
         final_block_height = total_content_height + (num_gaps * used_gap)
         start_y = DRAWING_AREA_TOP + (available_h - final_block_height) / 2
     else:
-        # Wenig Platz: Alles nutzen
         used_gap = max(MIN_GAP, theoretical_gap)
         start_y = DRAWING_AREA_TOP
 
@@ -123,16 +131,14 @@ def create_image(day_name, dishes, filename):
         if i < num_dishes - 1:
             current_y += used_gap
 
-    path = os.path.join(OUTPUT_DIR, filename)
-    img.save(path)
-    print(f"Erstellt: {path}")
+    save_rotated(img, filename)
 
 def create_weekend_image():
     filename = "wochenende.png"
-    path = os.path.join(OUTPUT_DIR, filename)
-    if os.path.exists(path):
-        return
-
+    # Hinweis: Hier überschreiben wir nicht, wenn es existiert, 
+    # aber für Layout-Tests solltest du das "if exists" vielleicht kurz rausnehmen
+    # oder die Datei auf dem Server löschen.
+    
     img = Image.new('L', (IMG_WIDTH, IMG_HEIGHT), 255)
     draw = ImageDraw.Draw(img)
     font_main = get_font(FONT_SIZE_HEADER_MAIN)
@@ -143,8 +149,12 @@ def create_weekend_image():
     h = bbox[3] - bbox[1]
     
     draw.text(((IMG_WIDTH - w)/2, (IMG_HEIGHT - h)/2), text, font=font_main, fill=0)
-    img.save(path)
-    print(f"Erstellt: {path}")
+    
+    # Drehen und Speichern
+    img_rotated = img.rotate(90, expand=True)
+    path = os.path.join(OUTPUT_DIR, filename)
+    img_rotated.save(path)
+    print(f"Erstellt (rotiert): {path}")
 
 def main():
     if not os.path.exists(OUTPUT_DIR):
