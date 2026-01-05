@@ -10,7 +10,6 @@ OUTPUT_DIR = "images"
 FONT_PATH = "Futura.ttc"
 
 # AUFLÖSUNG & LAYOUT (Final)
-# Wir entwerfen im Querformat (1448x1072), drehen es aber am Ende für den Kindle (1072x1448)
 IMG_WIDTH = 1448
 IMG_HEIGHT = 1072
 
@@ -19,7 +18,7 @@ FONT_SIZE_LABEL = 35
 FONT_SIZE_TEXT = 52
 LINE_SPACING = 12
 
-# Layout-Konfiguration (Final)
+# Layout-Konfiguration
 DRAWING_AREA_TOP = 150 
 DRAWING_AREA_BOTTOM = IMG_HEIGHT - 100
 MAX_GAP = 90 
@@ -70,13 +69,12 @@ def create_image(day_name, dishes, filename):
     draw.line((50, 120, IMG_WIDTH - 50, 120), fill=0, width=6)
     
     # --- DATEN VORBEREITEN ---
+    # Wir nehmen maximal die ersten 3 Gerichte
     dishes_to_draw = dishes[:3]
     num_dishes = len(dishes_to_draw)
     
-    # Hilfsfunktion zum Speichern (inkl. Rotation)
+    # Hilfsfunktion zum Speichern (inkl. Rotation für Kindle)
     def save_rotated(image_obj, fname):
-        # 90 Grad drehen für Kindle Display (Portrait -> Landscape View)
-        # expand=True tauscht Breite/Höhe (wird 1072x1448)
         img_rotated = image_obj.rotate(90, expand=True)
         path = os.path.join(OUTPUT_DIR, fname)
         img_rotated.save(path)
@@ -98,7 +96,7 @@ def create_image(day_name, dishes, filename):
         h += text_h
         block_heights.append(h)
 
-    # --- LAYOUT LOGIK (Final) ---
+    # --- LAYOUT LOGIK ---
     total_content_height = sum(block_heights)
     num_gaps = num_dishes - 1
     available_h = DRAWING_AREA_BOTTOM - DRAWING_AREA_TOP
@@ -135,10 +133,6 @@ def create_image(day_name, dishes, filename):
 
 def create_weekend_image():
     filename = "wochenende.png"
-    # Hinweis: Hier überschreiben wir nicht, wenn es existiert, 
-    # aber für Layout-Tests solltest du das "if exists" vielleicht kurz rausnehmen
-    # oder die Datei auf dem Server löschen.
-    
     img = Image.new('L', (IMG_WIDTH, IMG_HEIGHT), 255)
     draw = ImageDraw.Draw(img)
     font_main = get_font(FONT_SIZE_HEADER_MAIN)
@@ -150,7 +144,6 @@ def create_weekend_image():
     
     draw.text(((IMG_WIDTH - w)/2, (IMG_HEIGHT - h)/2), text, font=font_main, fill=0)
     
-    # Drehen und Speichern
     img_rotated = img.rotate(90, expand=True)
     path = os.path.join(OUTPUT_DIR, filename)
     img_rotated.save(path)
@@ -161,42 +154,55 @@ def main():
         os.makedirs(OUTPUT_DIR)
 
     print("Rufe Mensa-Daten ab...")
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36"
+    }
+    
     try:
-        response = requests.get(MENSA_URL, timeout=10)
+        response = requests.get(MENSA_URL, headers=headers, timeout=10)
         response.raise_for_status()
     except Exception as e:
-        print(f"Fehler: {e}")
+        print(f"Fehler bei Web-Anfrage: {e}")
+        # Wir machen weiter, damit ggf. leere Bilder erzeugt werden, statt abzustürzen
     else:
         soup = BeautifulSoup(response.text, 'html.parser')
         week_data = {k: [] for k in DAYS_MAPPING.keys()}
 
-        accordions = soup.select(".accordion__item")
-        for item in accordions:
-            btn = item.select_one(".accordion__button")
-            if not btn: continue
-            header_text = btn.get_text(strip=True)
-            current_day = None
-            for day in DAYS_MAPPING.keys():
-                if day in header_text:
-                    current_day = day
-                    break
+        # ITERIERE DURCH DIE TAGE
+        for day_name in DAYS_MAPPING.keys():
+            # Neue Struktur: <div class="tab_Donnerstag ...">
+            # Wir suchen nach einem div, dessen Klasse "tab_Wochentag" enthält
+            day_div = soup.find("div", class_=f"tab_{day_name}")
             
-            if current_day:
-                content = item.select_one(".accordion__content")
-                if not content: continue
-                rows = content.select(".speiseplan__offer")
-                if not rows: rows = content.select("tr")
+            if not day_div:
+                continue
 
-                for row in rows:
-                    meal_el = row.select_one(".speiseplan__offer-description") 
-                    cat_el = row.select_one(".speiseplan__offer-type")
-                    category = cat_el.get_text(strip=True) if cat_el else ""
-                    if "Salat" in category: continue 
-                    if meal_el:
-                        meal = meal_el.get_text(strip=True)
-                        meal_clean = re.sub(r'\s*\(\s*\d+(?:\s*,\s*\d+)*\s*\)', '', meal)
-                        week_data[current_day].append({ "meal": meal_clean })
+            # Suche alle Einträge (li) in diesem Tag
+            items = day_div.find_all("li")
+            
+            for item in items:
+                # 1. Prüfen, ob es Salat ist (im <h5> steht oft 'Salate')
+                headline = item.find("h5")
+                if headline and "Salat" in headline.get_text():
+                    continue
 
+                # 2. Das Gericht steht in <p class="essen"> -> <strong>
+                p_essen = item.find("p", class_="essen")
+                if not p_essen:
+                    continue
+                
+                # Wir wollen nur den Text im <strong> Tag, da die Allergene im <sup> Tag daneben stehen
+                strong_tag = p_essen.find("strong")
+                if strong_tag:
+                    meal_text = strong_tag.get_text(strip=True)
+                    # Bereinigung von evtl. verbliebenen Klammern/Nummern, falls Struktur abweicht
+                    # (Im aktuellen HTML ist das sauber getrennt, aber sicher ist sicher)
+                    meal_clean = re.sub(r'\s*\(\s*\d+.*\)', '', meal_text)
+                    
+                    if meal_clean:
+                         week_data[day_name].append({ "meal": meal_clean })
+
+        # Bilder generieren
         for day_name, filename in DAYS_MAPPING.items():
             create_image(day_name, week_data.get(day_name, []), filename)
 
