@@ -2,8 +2,7 @@ name: Update Mensa Plan
 
 on:
   schedule:
-    # 23:29 UTC jeden Tag (00:29 DE Winterzeit / 01:29 DE Sommerzeit)
-    # Krumme Zeit gegen GitHub-Queue-Verzögerung
+ 
     - cron: '03 23 * * *'
   workflow_dispatch:
 
