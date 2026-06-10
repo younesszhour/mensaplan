@@ -134,9 +134,10 @@ def create_image(day_name, dishes, filename):
         # In-Memory Rotation um 90 Grad für den hochkant Framebuffer
         img = Image.open(io.BytesIO(screenshot_bytes))
         img_rotated = img.rotate(90, expand=True)
+        img_grayscale = img_rotated.convert("L")
         output_path = os.path.join(OUTPUT_DIR, filename)
-        img_rotated.save(output_path)
-        print(f"Erstellt (Playwright + Rotation): {output_path}")
+        img_grayscale.save(output_path)
+        print(f"Erstellt (Playwright + Rotation + Grayscale): {output_path}")
 
 def create_weekend_image():
     filename = "wochenende.png"
@@ -195,8 +196,9 @@ def create_weekend_image():
         # In-Memory Rotation um 90 Grad für den hochkant Framebuffer
         img = Image.open(io.BytesIO(screenshot_bytes))
         img_rotated = img.rotate(90, expand=True)
-        img_rotated.save(output_path)
-        print(f"Erstellt (Playwright-Fallback): {output_path}")
+        img_grayscale = img_rotated.convert("L")
+        img_grayscale.save(output_path)
+        print(f"Erstellt (Playwright-Fallback + Grayscale): {output_path}")
 
 def main():
     if not os.path.exists(OUTPUT_DIR):
