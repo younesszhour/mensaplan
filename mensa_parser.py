@@ -242,6 +242,9 @@ def main():
                 if strong_tag:
                     meal_text = strong_tag.get_text(strip=True)
                     meal_clean = re.sub(r'\s*\(\s*\d+.*\)', '', meal_text)
+                    # Redundanten Beilagen-Zusatz entfernen
+                    meal_clean = re.sub(r',?\s*dazu eine frei wählbare Beilage aus der Vitrine', '', meal_clean, flags=re.IGNORECASE)
+                    meal_clean = meal_clean.strip()
                     
                     if meal_clean:
                          week_data[day_name].append({ "meal": meal_clean })
