@@ -48,7 +48,7 @@ def create_image(day_name, dishes, filename):
             }}
             
             h1 {{
-                font-size: 56px;
+                font-size: 64px;
                 font-weight: 500;
                 margin: 0 0 20px 0;
                 color: #000000;
@@ -74,7 +74,7 @@ def create_image(day_name, dishes, filename):
             }}
             
             .label {{
-                font-size: 32px;
+                font-size: 36px;
                 font-weight: 300;
                 color: #666666;
                 text-transform: uppercase;
@@ -83,14 +83,14 @@ def create_image(day_name, dishes, filename):
             }}
             
             .meal-text {{
-                font-size: 48px;
+                font-size: 56px;
                 font-weight: 400;
                 line-height: 1.4;
                 margin: 0;
             }}
             
             .empty-message {{
-                font-size: 46px;
+                font-size: 54px;
                 font-weight: 400;
                 text-align: center;
                 margin-top: 150px;
@@ -172,7 +172,7 @@ def create_weekend_image():
             }
             
             h1 {
-                font-size: 64px;
+                font-size: 76px;
                 font-weight: 400;
                 margin: 0;
                 text-align: center;
