@@ -28,7 +28,7 @@ def create_image(day_name, dishes, filename):
     <head>
         <meta charset="utf-8">
         <style>
-            @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500&display=swap');
+            @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap');
             
             body {{
                 margin: 0;
@@ -36,7 +36,7 @@ def create_image(day_name, dishes, filename):
                 width: 1448px;
                 height: 1072px;
                 background-color: #ffffff;
-                color: #000000;
+                color: #111111;
                 font-family: 'Outfit', -apple-system, sans-serif;
                 display: flex;
                 flex-direction: column;
@@ -44,19 +44,31 @@ def create_image(day_name, dishes, filename):
             }}
             
             .header-container {{
-                padding: 60px 80px 20px 80px;
+                padding: 70px 90px 10px 90px;
+                display: flex;
+                flex-direction: column;
+            }}
+            
+            .location-tag {{
+                font-size: 26px;
+                font-weight: 300;
+                color: #666666;
+                text-transform: uppercase;
+                letter-spacing: 6px;
+                margin-bottom: 10px;
             }}
             
             h1 {{
-                font-size: 64px;
-                font-weight: 500;
-                margin: 0 0 20px 0;
+                font-size: 84px;
+                font-weight: 600;
+                margin: 0 0 25px 0;
+                letter-spacing: -1px;
                 color: #000000;
             }}
             
             .divider {{
-                height: 6px;
-                background-color: #000000;
+                height: 4px;
+                background-color: #111111;
                 width: 100%;
             }}
             
@@ -65,7 +77,7 @@ def create_image(day_name, dishes, filename):
                 display: flex;
                 flex-direction: column;
                 justify-content: space-evenly;
-                padding: 10px 80px 60px 80px;
+                padding: 0 90px 70px 90px;
             }}
             
             .dish-block {{
@@ -74,19 +86,20 @@ def create_image(day_name, dishes, filename):
             }}
             
             .label {{
-                font-size: 36px;
-                font-weight: 300;
-                color: #666666;
+                font-size: 28px;
+                font-weight: 500;
+                color: #555555;
                 text-transform: uppercase;
-                letter-spacing: 2px;
-                margin-bottom: 12px;
+                letter-spacing: 3px;
+                margin-bottom: 8px;
             }}
             
             .meal-text {{
-                font-size: 56px;
+                font-size: 52px;
                 font-weight: 400;
-                line-height: 1.4;
+                line-height: 1.35;
                 margin: 0;
+                color: #000000;
             }}
             
             .empty-message {{
@@ -94,13 +107,14 @@ def create_image(day_name, dishes, filename):
                 font-weight: 400;
                 text-align: center;
                 margin-top: 150px;
-                color: #333333;
+                color: #444444;
             }}
         </style>
     </head>
     <body>
         <div class="header-container">
-            <h1>Zentralmensa {day_name}</h1>
+            <div class="location-tag">Zentralmensa</div>
+            <h1>{day_name}</h1>
             <div class="divider"></div>
         </div>
         <div class="content">
@@ -109,10 +123,11 @@ def create_image(day_name, dishes, filename):
     if not dishes:
         html_content += '<div class="empty-message">Keine Daten oder geschlossen.</div>'
     else:
-        for i, dish in enumerate(dishes[:3]):
+        for dish in dishes[:3]:
+            category = dish.get("category", "Essen")
             html_content += f"""
             <div class="dish-block">
-                <div class="label">Essen {i+1}</div>
+                <div class="label">{category}</div>
                 <p class="meal-text">{dish['meal']}</p>
             </div>
             """
@@ -234,6 +249,20 @@ def main():
                 if headline and "Salat" in headline.get_text():
                     continue
 
+                # Extrahiere und mappe Kategorie (Essen A -> FLEISCHGERICHT, Essen B -> NUDELN, Essen C -> VEGAN)
+                category = "Essen"
+                if headline:
+                    raw_cat = headline.get_text(strip=True)
+                    if "Essen A" in raw_cat:
+                        category = "FLEISCHGERICHT"
+                    elif "Essen B" in raw_cat:
+                        category = "NUDELN"
+                    elif "Essen C" in raw_cat:
+                        category = "VEGAN"
+                    else:
+                        category = re.sub(r'\(', ' (', raw_cat)
+                        category = re.sub(r'\s+', ' ', category).strip()
+
                 p_essen = item.find("p", class_="essen")
                 if not p_essen:
                     continue
@@ -247,7 +276,10 @@ def main():
                     meal_clean = meal_clean.strip()
                     
                     if meal_clean:
-                         week_data[day_name].append({ "meal": meal_clean })
+                         week_data[day_name].append({
+                             "meal": meal_clean,
+                             "category": category
+                         })
 
         # Bilder generieren
         for day_name, filename in DAYS_MAPPING.items():
