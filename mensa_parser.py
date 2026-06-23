@@ -20,15 +20,28 @@ DAYS_MAPPING = {
     "Samstag": "samstag.png"
 }
 
+DAY_METRICS = {
+    "Montag": {"size": 240, "top": -15, "left": -10},
+    "Dienstag": {"size": 230, "top": -14, "left": -10},
+    "Mittwoch": {"size": 230, "top": -14, "left": -10},
+    "Donnerstag": {"size": 200, "top": -12, "left": -9},
+    "Freitag": {"size": 240, "top": -15, "left": -10},
+    "Samstag": {"size": 240, "top": -15, "left": -10}
+}
+
 def create_image(day_name, dishes, filename):
-    # HTML-Template im Querformat (1448x1072) für optimale Textbreite
+    metrics = DAY_METRICS.get(day_name, {"size": 230, "top": -14, "left": -10})
+    size = metrics["size"]
+    top = metrics["top"]
+    left = metrics["left"]
+    
     html_content = f"""
     <!DOCTYPE html>
     <html>
     <head>
         <meta charset="utf-8">
         <style>
-            @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap');
+            @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;800&display=swap');
             
             body {{
                 margin: 0;
@@ -41,43 +54,48 @@ def create_image(day_name, dishes, filename):
                 display: flex;
                 flex-direction: column;
                 box-sizing: border-box;
+                position: relative;
+                overflow: hidden;
             }}
             
-            .header-container {{
-                padding: 70px 90px 10px 90px;
-                display: flex;
-                flex-direction: column;
-            }}
-            
-            .location-tag {{
-                font-size: 26px;
-                font-weight: 300;
-                color: #666666;
+            .bleed-header {{
+                position: absolute;
+                top: {top}px; 
+                left: {left}px; 
+                font-size: {size}px;
+                font-weight: 800;
+                color: #e5e5e5;
+                letter-spacing: -10px;
+                line-height: 0.8;
                 text-transform: uppercase;
-                letter-spacing: 6px;
-                margin-bottom: 10px;
-            }}
-            
-            h1 {{
-                font-size: 84px;
-                font-weight: 600;
-                margin: 0 0 25px 0;
-                letter-spacing: -1px;
-                color: #000000;
-            }}
-            
-            .divider {{
-                height: 4px;
-                background-color: #111111;
-                width: 100%;
+                margin: 0;
+                padding: 0;
+                z-index: 1;
+                user-select: none;
             }}
             
             .content {{
+                position: relative;
+                z-index: 2;
                 flex: 1;
                 display: flex;
                 flex-direction: column;
                 justify-content: space-evenly;
-                padding: 0 90px 70px 90px;
+                padding: 175px 90px 40px 90px;
+            }}
+            
+            .footer-tag {{
+                position: absolute;
+                bottom: 40px;
+                left: 90px;
+                right: 90px;
+                text-align: center;
+                font-size: 22px;
+                font-weight: 400;
+                color: #666666;
+                text-transform: uppercase;
+                letter-spacing: 6px;
+                z-index: 2;
             }}
             
             .dish-block {{
@@ -87,7 +105,7 @@ def create_image(day_name, dishes, filename):
             
             .label {{
                 font-size: 28px;
-                font-weight: 500;
+                font-weight: 300;
                 color: #555555;
                 text-transform: uppercase;
                 letter-spacing: 3px;
@@ -112,16 +130,12 @@ def create_image(day_name, dishes, filename):
         </style>
     </head>
     <body>
-        <div class="header-container">
-            <div class="location-tag">Zentralmensa</div>
-            <h1>{day_name}</h1>
-            <div class="divider"></div>
-        </div>
+        <div class="bleed-header">{day_name}</div>
         <div class="content">
     """
     
     if not dishes:
-        html_content += '<div class="empty-message">Keine Daten oder geschlossen.</div>'
+        html_content += '<div class="empty-message">Keine Live-Daten verfügbar oder Mensa geschlossen.</div>'
     else:
         for dish in dishes[:3]:
             category = dish.get("category", "Essen")
@@ -134,6 +148,7 @@ def create_image(day_name, dishes, filename):
             
     html_content += """
         </div>
+        <div class="footer-tag">Zentralmensa Kassel</div>
     </body>
     </html>
     """
