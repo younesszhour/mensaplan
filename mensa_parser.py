@@ -81,12 +81,12 @@ def create_image(day_name, dishes, filename):
                 display: flex;
                 flex-direction: column;
                 justify-content: space-evenly;
-                padding: 175px 90px 30px 90px;
+                padding: 175px 90px 20px 90px;
             }}
             
             .footer-tag {{
                 position: absolute;
-                bottom: 25px;
+                bottom: 15px;
                 left: 90px;
                 right: 90px;
                 text-align: center;
