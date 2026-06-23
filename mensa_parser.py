@@ -21,12 +21,12 @@ DAYS_MAPPING = {
 }
 
 DAY_METRICS = {
-    "Montag": {"size": 240, "top": 0, "left": -10},
-    "Dienstag": {"size": 230, "top": 0, "left": -10},
-    "Mittwoch": {"size": 230, "top": 0, "left": -10},
-    "Donnerstag": {"size": 200, "top": 0, "left": -9},
-    "Freitag": {"size": 240, "top": 0, "left": -10},
-    "Samstag": {"size": 240, "top": 0, "left": -10}
+    "Montag": {"size": 240, "top": 20, "left": -10},
+    "Dienstag": {"size": 230, "top": 20, "left": -10},
+    "Mittwoch": {"size": 230, "top": 20, "left": -10},
+    "Donnerstag": {"size": 200, "top": 20, "left": -9},
+    "Freitag": {"size": 240, "top": 20, "left": -10},
+    "Samstag": {"size": 240, "top": 20, "left": -10}
 }
 
 def create_image(day_name, dishes, filename):
@@ -148,7 +148,7 @@ def create_image(day_name, dishes, filename):
             
     html_content += """
         </div>
-        <div class="footer-tag">Zentralmensa Kassel</div>
+        <div class="footer-tag">ZENTRALMENSA</div>
     </body>
     </html>
     """
