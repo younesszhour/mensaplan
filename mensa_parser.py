@@ -149,6 +149,23 @@ def create_image(day_name, dishes, filename):
     html_content += """
         </div>
         <div class="footer-tag">Zentralmensa Kassel</div>
+        
+        <script>
+            // Dynamic font scaling to prevent page overflow
+            window.addEventListener('load', () => {
+                let fontSize = 52;
+                const maxAttempts = 15;
+                let attempts = 0;
+                
+                while (document.body.scrollHeight > 1072 && fontSize > 32 && attempts < maxAttempts) {
+                    fontSize -= 2;
+                    document.querySelectorAll('.meal-text').forEach(el => {
+                        el.style.fontSize = fontSize + 'px';
+                    });
+                    attempts++;
+                }
+            });
+        </script>
     </body>
     </html>
     """
@@ -158,6 +175,7 @@ def create_image(day_name, dishes, filename):
         page = browser.new_page(viewport={"width": 1448, "height": 1072})
         page.set_content(html_content)
         page.evaluate("document.fonts.ready")
+        page.wait_for_timeout(100)  # Wait for scaling script to run
         screenshot_bytes = page.screenshot(type="png")
         browser.close()
         
