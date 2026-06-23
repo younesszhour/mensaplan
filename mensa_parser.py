@@ -21,12 +21,12 @@ DAYS_MAPPING = {
 }
 
 DAY_METRICS = {
-    "Montag": {"size": 240, "top": -15, "left": -10},
-    "Dienstag": {"size": 230, "top": -14, "left": -10},
-    "Mittwoch": {"size": 230, "top": -14, "left": -10},
-    "Donnerstag": {"size": 200, "top": -12, "left": -9},
-    "Freitag": {"size": 240, "top": -15, "left": -10},
-    "Samstag": {"size": 240, "top": -15, "left": -10}
+    "Montag": {"size": 240, "top": 0, "left": -10},
+    "Dienstag": {"size": 230, "top": 0, "left": -10},
+    "Mittwoch": {"size": 230, "top": 0, "left": -10},
+    "Donnerstag": {"size": 200, "top": 0, "left": -9},
+    "Freitag": {"size": 240, "top": 0, "left": -10},
+    "Samstag": {"size": 240, "top": 0, "left": -10}
 }
 
 def create_image(day_name, dishes, filename):
